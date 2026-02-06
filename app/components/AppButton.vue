@@ -56,7 +56,7 @@ const variantClasses = computed(() => {
 
   const map = {
     primary: 'from-primary-500 to-primary-700 group-active:from-primary-600 group-active:to-primary-800',
-    secondary: 'from-gray-400 to-gray-500 group-active:from-gray-500 group-active:to-gray-600',
+    secondary: 'from-gray-500 to-gray-600 group-active:from-gray-600 group-active:to-gray-700 dark:from-gray-600 dark:to-gray-700 dark:group-active:from-gray-700 dark:group-active:to-gray-800 border-[0.5px] border-gray-700/30 dark:border-gray-500/30',
     white: 'from-white to-gray-200 group-active:from-gray-100 group-active:to-gray-300 border-[0.5px] border-gray-400/75',
     danger: 'from-red-500 to-red-700 group-active:from-red-600 group-active:to-red-800',
     ghost: 'bg-transparent shadow-none',
