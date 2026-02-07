@@ -18,6 +18,7 @@ const props = withDefaults(defineProps<{
 
 const { uploadFile } = useUploads()
 const { openFile } = useFileHandlers()
+const { createFolder, deleteFiles, deleteFilesPermanently, renameFile, moveFile, restoreFile, getDeleteDescription } = useFiles()
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
@@ -157,15 +158,6 @@ const clearSelection = () => selectedFiles.value.clear()
 
 const refreshCurrentView = async () => props.refresh && await props.refresh()
 
-const {
-  handleCreateFolder: createFolderAction,
-  handleDeleteFiles: deleteFilesAction,
-  handleRenameFile: renameFileAction,
-  handleRestoreFiles: restoreFilesAction,
-  handleMoveFiles: moveFilesAction,
-  getDeleteDescription
-} = useFileActions(refreshCurrentView, () => selectedFiles.value.clear())
-
 const openCreateFolderModal = () => {
   newFolderName.value = ''
   showCreateFolderModal.value = true
@@ -173,8 +165,12 @@ const openCreateFolderModal = () => {
 
 const handleCreateFolder = async () => {
   if (!newFolderName.value) return
-  const success = await createFolderAction(newFolderName.value, currentFolderID.value)
-  if (success) showCreateFolderModal.value = false
+  try {
+    await createFolder(newFolderName.value, currentFolderID.value)
+    showCreateFolderModal.value = false
+  } catch (e) {
+    alert(t('files.alerts.createFolderFailed'))
+  }
 }
 
 const openDeleteConfirm = (item?: FileItem) => {
@@ -185,8 +181,16 @@ const openDeleteConfirm = (item?: FileItem) => {
 const confirmDelete = async () => {
   isDeleting.value = true
   try {
-    const success = await deleteFilesAction(activeItems.value, props.isTrash)
-    if (success) showDeleteConfirm.value = false
+    const ids = activeItems.value.map(i => i.id)
+    if (props.isTrash) {
+      await deleteFilesPermanently(ids)
+    } else {
+      await deleteFiles(ids)
+    }
+    clearSelection()
+    showDeleteConfirm.value = false
+  } catch (e) {
+    alert(t('files.alerts.deleteFailed'))
   } finally {
     isDeleting.value = false
     activeItems.value = []
@@ -207,17 +211,33 @@ const startRename = async (item: FileItem) => {
 const handleRename = async () => {
   const item = activeItems.value[0]
   if (!item || !renameName.value) return
-  const success = await renameFileAction(item, renameName.value, renameExtension.value)
-  if (success) showRenameModal.value = false
+  try {
+    const fullName = renameExtension.value ? `${renameName.value}.${renameExtension.value}` : renameName.value
+    await renameFile(item.id, fullName)
+    showRenameModal.value = false
+  } catch (e) {
+    alert(t('files.alerts.renameFailed'))
+  }
 }
 
 const handleRestore = async (item?: FileItem) => {
   const targets = item ? [item] : currentItems.value.filter(i => selectedFiles.value.has(i.id))
-  await restoreFilesAction(targets)
+  try {
+    await Promise.all(targets.map(t => restoreFile(t.id)))
+    clearSelection()
+  } catch (e) {
+    alert(t('files.alerts.restoreFailed'))
+  }
 }
 
 const handleMoveFile = async (payload: { sourceIds: string[], targetId: string | null }) => {
-  await moveFilesAction(payload.sourceIds, payload.targetId)
+  if (payload.sourceIds.length === 0) return
+  try {
+    await Promise.all(payload.sourceIds.map(id => moveFile(id, payload.targetId)))
+    clearSelection()
+  } catch (e) {
+    alert(t('files.alerts.moveFailed'))
+  }
 }
 
 const handleDownloadFile = async (item: FileItem) => {

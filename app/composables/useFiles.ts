@@ -1,20 +1,22 @@
 import type { FileItem, BreadcrumbItem, ApiFile, FileIndexDTO } from '~/types/file'
 
 const mapFiles = (rawFiles: ApiFile[]): FileItem[] => {
-  return rawFiles.map(f => ({
-    id: f.id,
-    name: f.filename,
-    type: determineFileType(f),
-    size: f.isDirectory ? undefined : formatSize(f.size),
-    sizeBytes: f.size,
-    updatedAt: new Date(f.updatedAt),
-    createdAt: new Date(f.createdAt),
-    deletedAt: f.deletedAt ? new Date(f.deletedAt) : undefined,
-    isFavorite: f.isFavorite,
-    isShared: f.isShared,
-    isRecent: f.isRecent,
-  }))
+  return rawFiles.map(f => mapFile(f))
 }
+
+const mapFile = (f: ApiFile): FileItem => ({
+  id: f.id,
+  name: f.filename,
+  type: determineFileType(f),
+  size: f.isDirectory ? undefined : formatSize(f.size),
+  sizeBytes: f.size,
+  updatedAt: new Date(f.updatedAt),
+  createdAt: new Date(f.createdAt),
+  deletedAt: f.deletedAt ? new Date(f.deletedAt) : undefined,
+  isFavorite: f.isFavorite,
+  isShared: f.isShared,
+  isRecent: f.isRecent,
+})
 
 export const useFiles = () => {
   // const config = useRuntimeConfig()
@@ -67,15 +69,34 @@ export const useFiles = () => {
   const fetchTrash = () => 
     executeFetch('/api/files/trash', {}, [{ name: 'Trash', labelKey: 'navigation.trash', icon: 'trash', color: 'red', id: null, path: '/trash' }])
 
-  const createFolder = async (name: string, parentID: string | null = currentParentID.value) => {
-    await useApi(`/api/files/create-directory`, {
+  const updateFileInState = (updatedFile: FileItem) => {
+    const index = files.value.findIndex(f => f.id === updatedFile.id)
+    if (index !== -1) {
+      files.value[index] = updatedFile
+    }
+  }
+
+  const removeFileFromState = (id: string) => {
+    files.value = files.value.filter(f => f.id !== id)
+  }
+
+  const addFileToState = (newFile: FileItem) => {
+    files.value.push(newFile)
+  }
+
+  const createFolder = async (name: string, parentID: string | null = currentParentID.value): Promise<FileItem> => {
+    const apiFile = await useApi<ApiFile>(`/api/files/create-directory`, {
       method: 'POST',
       body: { name, parentID }
     })
+    const newFile = mapFile(apiFile)
+    addFileToState(newFile)
+    return newFile
   }
 
   const deleteFile = async (id: string) => {
     await useApi(`/api/files/${id}`, { method: 'DELETE' })
+    removeFileFromState(id)
   }
 
   const deleteFiles = async (ids: string[]) => {
@@ -84,6 +105,7 @@ export const useFiles = () => {
 
   const deleteFilePermanently = async (id: string, shouldFetchQuota = true) => {
     await useApi(`/api/files/${id}/permanent-delete`, { method: 'DELETE' })
+    removeFileFromState(id)
     if (shouldFetchQuota) fetchQuota()
   }
 
@@ -92,28 +114,51 @@ export const useFiles = () => {
     fetchQuota()
   }
 
-  const moveFile = async (fileID: string, targetParentID: string | null) => {
-    await useApi(`/api/files/move-file`, {
+  const moveFile = async (fileID: string, targetParentID: string | null): Promise<FileItem> => {
+    const apiFile = await useApi<ApiFile>(`/api/files/move-file`, {
       method: 'POST',
       body: { fileID, parentID: targetParentID }
     })
+    const updatedFile = mapFile(apiFile)
+    removeFileFromState(fileID)
+    return updatedFile
   }
 
-  const renameFile = async (id: string, name: string) => {
-    await useApi(`/api/files/${id}`, {
+  const renameFile = async (id: string, name: string): Promise<FileItem> => {
+    const apiFile = await useApi<ApiFile>(`/api/files/${id}`, {
       method: 'PATCH',
       body: { name }
     })
+    const updatedFile = mapFile(apiFile)
+    updateFileInState(updatedFile)
+    return updatedFile
   }
 
-  const restoreFile = async (id: string) => {
-    await useApi(`/api/files/${id}/restore`, { method: 'POST' })
+  const restoreFile = async (id: string): Promise<FileItem> => {
+    const apiFile = await useApi<ApiFile>(`/api/files/${id}/restore`, { method: 'POST' })
+    const restoredFile = mapFile(apiFile)
+    removeFileFromState(id)
+    return restoredFile
   }
 
-  const toggleFavorite = async (id: string) => {
-    const apiBase = useApiBase()
-    await useApi(`${apiBase}/api/files/${id}/favorite`, { method: 'POST' })
+  const toggleFavorite = async (id: string): Promise<FileItem> => {
+    const apiFile = await useApi<ApiFile>(`/api/files/${id}/favorite`, { method: 'POST' })
+    const updatedFile = mapFile(apiFile)
+    updateFileInState(updatedFile)
+    return updatedFile
   }
+
+  const getDeleteDescription = (items: FileItem[], isTrash: boolean) => {
+    const { t } = useI18n()
+    const count = items.length
+    if (isTrash) {
+      if (count === 1) return t('files.actions.deletePermanent.descriptionSingle', { name: items[0]?.name })
+      return t('files.actions.deletePermanent.descriptionMultiple', { count })
+    }
+    if (count === 1) return t('files.actions.delete.descriptionSingle', { name: items[0]?.name })
+    return t('files.actions.delete.descriptionMultiple', { count })
+  }
+
 
   return {
     // State
@@ -137,6 +182,10 @@ export const useFiles = () => {
     restoreFile,
     deleteFilePermanently,
     deleteFilesPermanently,
-    toggleFavorite
+    toggleFavorite,
+    
+    // Utilities
+    getDeleteDescription
   }
+
 }

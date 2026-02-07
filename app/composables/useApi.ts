@@ -70,6 +70,7 @@ export const useApi = <T>(url: string, options: any = {}) => {
                 isRefreshing = false
             }
         }
-        throw error
+
+        throw error as Error
     })
 }
