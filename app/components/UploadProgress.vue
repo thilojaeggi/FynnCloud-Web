@@ -184,7 +184,7 @@ const formatSpeed = (bytesPerSecond: number) => {
                                         <div v-if="item.status === 'uploading' || item.status === 'processing'"
                                             class="mt-2 w-full h-1 rounded-full bg-gray-100 dark:bg-white/5 overflow-hidden">
                                             <div class="h-full rounded-full transition-[width] duration-500 ease-out
-                                                       bg-blue-500/80 dark:bg-blue-400/80"
+                                                       bg-primary-500/80 dark:bg-primary-400/80"
                                                 :style="{ width: `${item.progress}%` }" />
                                         </div>
                                     </div>
