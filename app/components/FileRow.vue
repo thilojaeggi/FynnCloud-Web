@@ -97,7 +97,7 @@ const formatDate = (date: Date | undefined) => {
                 rowBackgroundClasses
             ]">
             <div class="flex items-center relative z-10">
-                <div class="mr-4 shrink-0 transition-transform duration-200 ">
+                <div class="mr-4 shrink-0 transition-transform duration-200 flex items-center justify-center">
                     <FileIcon :file-type="item.type" :selected="selected" />
                 </div>
                 <div class="flex-1 min-w-0">
