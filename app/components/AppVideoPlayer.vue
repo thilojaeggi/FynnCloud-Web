@@ -34,21 +34,18 @@ onMounted(() => {
             <div v-if="isVisible"
                 class="fixed inset-0 z-60 overflow-y-auto pointer-events-none p-4 md:p-8 flex items-center justify-center">
                 <div
-                    class="relative w-full max-w-6xl bg-white rounded-lg shadow-2xl flex flex-col overflow-hidden pointer-events-auto">
+                    class="relative w-full max-w-6xl bg-white dark:bg-neutral-900 rounded-lg shadow-2xl flex flex-col overflow-hidden pointer-events-auto">
                     <!-- Header -->
                     <div
-                        class="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50 shrink-0">
+                        class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800 shrink-0">
                         <div class="flex items-center gap-2 overflow-hidden">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="size-6 text-primary-500 shrink-0">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
-                            </svg>
-                            <h3 class="font-medium text-gray-900 truncate">{{ currentFile?.name }}</h3>
+                            <FileIcon file-type="video" class="size-6" />
+                            <h3 class="font-medium text-gray-900 dark:text-gray-100 truncate">{{ currentFile?.name }}
+                            </h3>
                         </div>
                         <div class="flex items-center gap-2">
                             <button @click="close"
-                                class="p-1 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-200 transition-colors cursor-pointer">
+                                class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
                                     class="size-5">
                                     <path
