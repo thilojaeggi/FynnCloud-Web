@@ -5,14 +5,17 @@ const mapFiles = (rawFiles: ApiFile[]): FileItem[] => {
 }
 
 const mapFile = (f: ApiFile): FileItem => ({
+  owner: f.owner,
+  parent: f.parent,
   id: f.id,
   name: f.filename,
   type: determineFileType(f),
   size: f.isDirectory ? undefined : formatSize(f.size),
   sizeBytes: f.size,
+  lastModified: f.lastModified ? new Date(f.lastModified) : null,
   updatedAt: new Date(f.updatedAt),
   createdAt: new Date(f.createdAt),
-  deletedAt: f.deletedAt ? new Date(f.deletedAt) : undefined,
+  deletedAt: f.deletedAt ? new Date(f.deletedAt) : null,
   isFavorite: f.isFavorite,
   isShared: f.isShared,
   isRecent: f.isRecent,

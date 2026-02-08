@@ -12,16 +12,23 @@ export type FileType =
     | 'file'
 
 export interface FileItem {
+    owner: {
+        id: string
+    }
+    parent: {
+        id: string | null
+    }
     id: string
     name: string
     type: FileType
     size?: string
     sizeBytes?: number
+    lastModified: Date | null
     updatedAt: Date
     createdAt: Date
-    deletedAt?: Date
-    isFavorite?: boolean
-    isShared?: boolean
+    deletedAt: Date | null
+    isFavorite: boolean
+    isShared: boolean
     isRecent?: boolean
 }
 export interface BreadcrumbItem {
@@ -42,16 +49,23 @@ export interface ColumnDefinition {
 }
 
 export interface ApiFile {
+    owner: {
+        id: string
+    }
+    parent: {
+        id: string | null
+    }
     id: string
     filename: string
     contentType: string
     size: number
     isDirectory: boolean
+    lastModified: string | null
     createdAt: string
     updatedAt: string
-    deletedAt?: string
-    isFavorite?: boolean
-    isShared?: boolean
+    deletedAt: string | null
+    isFavorite: boolean
+    isShared: boolean
     isRecent?: boolean
 }
 
