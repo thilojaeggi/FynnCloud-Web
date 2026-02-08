@@ -63,7 +63,7 @@ watch(() => props.showRename, async (newVal) => {
     <!-- Rename Modal -->
     <AppDialog :model-value="showRename" @update:model-value="emit('update:showRename', $event)"
         :title="t('files.actions.rename.title')">
-        <div class="text-sm text-gray-500 mb-4">
+        <div class="text-sm text-gray-500 mb-2">
             {{ t('files.actions.rename.description') }}
         </div>
         <div class="flex items-end gap-2">
