@@ -116,7 +116,11 @@
         "cancel": "Annulla",
         "save": "Salva",
         "name": "Nome",
-        "justNow": "Proprio ora"
+        "justNow": "Proprio ora",
+        "error": "Errore",
+        "success": "Successo",
+        "warning": "Avviso",
+        "info": "Info"
     },
     "quota": {
         "title": "Quota",

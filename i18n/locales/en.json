@@ -153,7 +153,11 @@
         "cancel": "Cancel",
         "save": "Save",
         "name": "Name",
-        "justNow": "Just now"
+        "justNow": "Just now",
+        "error": "Error",
+        "success": "Success",
+        "warning": "Warning",
+        "info": "Info"
     },
     "quota": {
         "title": "Quota",

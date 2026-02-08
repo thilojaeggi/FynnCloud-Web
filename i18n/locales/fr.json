@@ -116,7 +116,11 @@
         "cancel": "Annuler",
         "save": "Enregistrer",
         "name": "Nom",
-        "justNow": "À l'instant"
+        "justNow": "À l'instant",
+        "error": "Erreur",
+        "success": "Succès",
+        "warning": "Avertissement",
+        "info": "Info"
     },
     "quota": {
         "title": "Quota",

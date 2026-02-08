@@ -148,7 +148,11 @@
         "cancel": "Abbrechen",
         "save": "Speichern",
         "name": "Name",
-        "justNow": "Gerade eben"
+        "justNow": "Gerade eben",
+        "error": "Fehler",
+        "success": "Erfolg",
+        "warning": "Warnung",
+        "info": "Info"
     },
     "quota": {
         "title": "Speicherplatz",
