@@ -1,39 +1,27 @@
 <script setup lang="ts">
 import type { FileType } from '~/types/file'
-import type { Component } from 'vue'
-import IconFolder from '~/components/icons/IconFolder.vue'
-import IconImage from '~/components/icons/IconImage.vue'
-import IconVideo from '~/components/icons/IconVideo.vue'
-import IconAudio from '~/components/icons/IconAudio.vue'
-import IconPdf from '~/components/icons/IconPdf.vue'
-import IconDoc from '~/components/icons/IconDoc.vue'
-import IconSheet from '~/components/icons/IconSheet.vue'
-import IconSlide from '~/components/icons/IconSlide.vue'
-import IconArchive from '~/components/icons/IconArchive.vue'
-import IconCode from '~/components/icons/IconCode.vue'
-import IconFile from '~/components/icons/IconFile.vue'
 
 const props = defineProps<{
   fileType: FileType
   selected?: boolean
 }>()
 
-const iconMap: Record<FileType, Component> = {
-  folder: IconFolder,
-  image: IconImage,
-  video: IconVideo,
-  audio: IconAudio,
-  pdf: IconPdf,
-  doc: IconDoc,
-  sheet: IconSheet,
-  slide: IconSlide,
-  archive: IconArchive,
-  code: IconCode,
-  file: IconFile
+const iconMap: Record<FileType, string> = {
+  folder: 'heroicons:folder-solid',
+  image: 'fa:file-image-o',
+  video: 'fa:file-video-o',
+  audio: 'heroicons:musical-note',
+  pdf: 'fa:file-pdf-o',
+  doc: 'fa:file-text',
+  sheet: 'garden:file-spreadsheet-stroke-16',
+  slide: 'heroicons:presentation-chart-bar',
+  archive: 'heroicons:archive-box-solid',
+  code: 'heroicons:code-bracket',
+  file: 'fa:file-o'
 }
 
 const colorMap: Record<FileType, string> = {
-  folder: 'text-yellow-500 ',
+  folder: 'text-yellow-500',
   image: 'text-purple-500',
   video: 'text-pink-500',
   audio: 'text-yellow-600',
@@ -46,10 +34,20 @@ const colorMap: Record<FileType, string> = {
   file: 'text-gray-400'
 }
 
-const currentComponent = computed(() => iconMap[props.fileType] || IconFile)
-const currentColorClass = computed(() => props.selected ? 'text-white' : (colorMap[props.fileType] || 'text-gray-400'))
+// Return size class 
+const sizeClass = computed<string>(() => {
+  switch (props.fileType) {
+    default:
+      return 'w-6 h-6'
+  }
+})
+
+const iconName = computed(() => iconMap[props.fileType] || iconMap.file)
+const currentColorClass = computed(() =>
+  props.selected ? 'text-white' : (colorMap[props.fileType] || 'text-gray-400')
+)
 </script>
 
 <template>
-  <component :is="currentComponent" class="w-6 h-6" :class="currentColorClass" />
+  <Icon :name="iconName" :class="[sizeClass, currentColorClass]" />
 </template>
