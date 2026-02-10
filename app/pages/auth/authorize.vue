@@ -97,8 +97,7 @@ const cancel = () => {
                 <p class="text-gray-300 text-sm leading-relaxed" v-else-if="!finished && alreadyAuthorized"
                     v-html="t('auth.authorize.alreadyAuthorized', { client: `<span class='font-semibold text-white'>${clientName}</span>` })">
                 </p>
-                <p class="text-gray-300 text-sm leading-relaxed" v-else>
-                    {{ t('auth.authorize.success') }}
+                <p class="text-gray-300 text-sm leading-relaxed" v-else v-html="t('auth.authorize.success')">
                 </p>
             </div>
 
