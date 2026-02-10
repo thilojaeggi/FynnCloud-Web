@@ -32,12 +32,15 @@
         "confirmPassword": "Passwort bestätigen",
         "authorize": {
             "title": "Zugriff genehmigen",
-            "description": "Die Anwendung <span class=\"font-semibold text-gray-900\">{client}</span> fordert Zugriff auf dein FynnCloud-Konto an. Stelle sicher, dass du <span class=\"text-white/70\">{client}</span> vertraust, bevor du fortfährst.",
+            "description": "Die Anwendung <span class=\"font-semibold text-gray-900\">{client}</span> fordert Zugriff auf dein FynnCloud-Konto an. Stelle sicher, dass du dieser Anwendung vertraust, bevor du fortfährst.",
             "account": "Konto",
             "permissions": "Berechtigungen",
+            "scope": "Bereich",
             "fullAccess": "Vollzugriff",
             "action": "Autorisieren",
-            "success": "Autorisierung erfolgreich! Weiterleitung zur Anwendung...<br>Sie können diese Seite nun schliessen.",
+            "continue": "Weiter",
+            "alreadyAuthorized": "Du hast <span class=\"font-semibold text-gray-900\">{client}</span> bereits autorisiert. Du kannst ohne erneute Genehmigung fortfahren.",
+            "success": "Autorisierung erfolgreich! Weiterleitung zur Anwendung...<br>Sie können dieses Fenster nun schliessen.",
             "error": {
                 "missingParams": "Erforderliche Autorisierungsparameter fehlen.",
                 "invalidClientId": "Ungültige Client-ID.",
@@ -48,21 +51,13 @@
     },
     "welcome": "Willkommen",
     "error": {
-        "title": "Fehler",
-        "message": "Ein Fehler ist aufgetreten",
         "serverUnreachable": "Server nicht erreichbar",
-        "generic": "Ein Fehler ist aufgetreten",
-        "unknown": "Ein unbekannter Fehler ist aufgetreten",
-        "auth": {
-            "register": {
-                "usernameTaken": "Benutzername ist bereits vergeben",
-                "emailTaken": "E-Mail-Adresse ist bereits vergeben",
-                "passwordsDoNotMatch": "Passwörter stimmen nicht überein"
-            },
-            "login": {
-                "invalidCredentials": "Ungültiger Benutzername oder Passwort"
-            }
-        }
+        "networkError": "Netzwerkverbindung unterbrochen.",
+        "unknown": "Ein unbekannter Fehler ist aufgetreten.",
+        "unauthorized": "Sitzung abgelaufen. Bitte erneut anmelden.",
+        "forbidden": "Du hast keine Berechtigung, auf diese Ressource zuzugreifen.",
+        "notFound": "Die angeforderte Ressource wurde nicht gefunden.",
+        "generic": "Ein Fehler ist aufgetreten"
     },
     "navigation": {
         "allFiles": "Alle Dateien",
@@ -82,13 +77,16 @@
         "type": {
             "folder": "Ordner"
         },
+        "drag": {
+            "multiple": "Mehrere Dateien"
+        },
         "columns": {
             "title": "Spalten",
             "name": "Name",
             "size": "Grösse",
             "lastChanged": "Zuletzt geändert",
             "created": "Erstellt",
-            "deletedAt": "Gelöscht"
+            "deletedAt": "Gelöscht am"
         },
         "selected": "{count} ausgewählt",
         "actions": {
@@ -96,10 +94,10 @@
             "play": "Abspielen",
             "delete": {
                 "button": "Löschen",
-                "title": "In den Papierkorb werfen",
-                "confirm": "Bist du sicher, dass du '{fileName}' in den Papierkorb werfen möchtest?",
-                "descriptionSingle": "Bist du sicher, dass du <b>'{name}'</b> in den Papierkorb werfen möchtest?",
-                "descriptionMultiple": "Bist du sicher, dass du <b>{count} Elemente</b> in den Papierkorb werfen möchtest?"
+                "title": "In den Papierkorb verschieben",
+                "confirm": "Bist du sicher, dass du '{fileName}' in den Papierkorb verschieben möchtest?",
+                "descriptionSingle": "Bist du sicher, dass du <b>'{name}'</b> in den Papierkorb verschieben möchtest?",
+                "descriptionMultiple": "Bist du sicher, dass du <b>{count} Elemente</b> in den Papierkorb verschieben möchtest?"
             },
             "deletePermanent": {
                 "button": "Endgültig löschen",
@@ -126,8 +124,8 @@
             "unfavorite": "Favorit entfernen",
             "move": {
                 "fileTitle": "Datei verschieben | Dateien verschieben",
-                "folderTitle": "Ordner verschieben",
-                "description": "Wähle einen Ordner aus, in den du die Dateien verschieben möchtest.",
+                "folderTitle": "Ordner verschieben | Ordner verschieben",
+                "description": "Dateien in einen anderen Ordner verschieben.",
                 "button": "Verschieben"
             },
             "copy": "Kopieren",
@@ -140,8 +138,14 @@
         "alerts": {
             "createFolderFailed": "Ordner konnte nicht erstellt werden",
             "renameFailed": "Umbenennen fehlgeschlagen",
-            "restoreFailed": "Wiederherstellen der Elemente fehlgeschlagen",
-            "moveFailed": "Verschieben der Datei fehlgeschlagen"
+            "restoreFailed": "Wiederherstellen fehlgeschlagen",
+            "moveFailed": "Verschieben fehlgeschlagen",
+            "moveSuccess": "Elemente erfolgreich verschoben"
+        },
+        "move": {
+             "title": "Elemente verschieben",
+             "button": "Hierher verschieben",
+             "selectDestination": "Zielordner auswählen"
         }
     },
     "common": {
@@ -175,6 +179,35 @@
             "uploading": "{progress}%",
             "processing": "Verarbeiten...",
             "completed": "Fertiggestellt"
+        }
+    },
+    "admin": {
+        "title": "Administration",
+        "overview": "Übersicht",
+        "users": "Benutzer",
+        "settings": "Einstellungen",
+        "backToFiles": "Zurück zu Dateien",
+        "systemInfo": "Systeminformationen",
+        "appName": "App-Name",
+        "version": "Version",
+        "environment": "Umgebung",
+        "comingSoon": "Demnächst verfügbar",
+        "alerts": {
+            "title": "Systemzustand",
+            "critical": "Kritisch",
+            "warning": "Warnung",
+            "info": "Info",
+            "noIssues": "Keine Probleme erkannt",
+            "someIssues": "Einige Probleme erkannt",
+            "criticalIssues": "Kritische Probleme erkannt",
+            "jwtSecretDefault": "JWT-Secret verwendet einen Standardwert — Tokens werden bei jedem Neustart ungültig. Setze JWT_SECRET.",
+            "sqliteInProduction": "SQLite wird in Produktion verwendet. Erwäge Wechsel zu PostgreSQL.",
+            "localStorageInProduction": "Lokaler Speicher in Produktion aktiv. Erwäge Wechsel zu S3.",
+            "corsAllowAll": "CORS erlaubt alle Ursprünge. Schränke die erlaubten Ursprünge ein.",
+            "ldapDefaultPassword": "LDAP verwendet Standard-Passwort. Ändere LDAP_PASSWORD.",
+            "ldapDisabled": "LDAP-Authentifizierung ist nicht aktiviert.",
+            "appNameDefault": "App-Name ist 'FynnCloud'. Setze APP_NAME zum Anpassen.",
+            "httpNotHttps": "HTTP wird nicht empfohlen. Verwende HTTPS."
         }
     }
 }

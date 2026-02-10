@@ -40,7 +40,7 @@
             "action": "Authorize",
             "continue": "Continue",
             "alreadyAuthorized": "You have already authorized <span class=\"font-semibold text-gray-900\">{client}</span>. You can continue without re-approving.",
-            "success": "Authorization successful! Redirecting to application..You may close this window.",
+            "success": "Authorization successful! Redirecting to application...<br>You may close this window.",
             "error": {
                 "missingParams": "Missing required authorization parameters.",
                 "invalidClientId": "Invalid client ID.",
@@ -180,6 +180,35 @@
         "uploading": "{progress}%",
         "processing": "Processing...",
         "completed": "Completed"
+        }
+    },
+    "admin": {
+        "title": "Administration",
+        "overview": "Overview",
+        "users": "Users",
+        "settings": "Settings",
+        "backToFiles": "Back to Files",
+        "systemInfo": "System Information",
+        "appName": "App Name",
+        "version": "Version",
+        "environment": "Environment",
+        "comingSoon": "Coming soon",
+        "alerts": {
+            "title": "System Health",
+            "critical": "Critical",
+            "warning": "Warning",
+            "info": "Info",
+            "noIssues": "No issues detected",
+            "someIssues": "Some issues detected",
+            "criticalIssues": "Critical issues detected",
+            "jwtSecretDefault": "JWT secret is using a random default — tokens will be invalidated on every server restart. Set the JWT_SECRET environment variable.",
+            "sqliteInProduction": "SQLite is being used in a production environment. Consider switching to PostgreSQL.",
+            "localStorageInProduction": "Local file storage is being used in production. Consider switching to S3.",
+            "corsAllowAll": "CORS is configured to allow all origins in production. Restrict allowed origins.",
+            "ldapDefaultPassword": "LDAP is configured with the default bind password. Change LDAP_PASSWORD.",
+            "ldapDisabled": "LDAP authentication is not enabled.",
+            "appNameDefault": "App name is using the default value 'FynnCloud'. Set APP_NAME to customize.",
+            "httpNotHttps": "HTTP is not recommended for production. Consider using HTTPS."
         }
     }
 }

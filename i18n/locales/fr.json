@@ -1,5 +1,13 @@
 {
     "auth": {
+        "callback": {
+            "title": "Authentification...",
+            "processing": "Connexion en cours...",
+            "error": {
+                "missingCode": "Le code d'autorisation est manquant.",
+                "exchangeFailed": "Échec de l'échange du code d'autorisation."
+            }
+        },
         "login": {
             "title": "Se connecter",
             "footer": "Vous n'avez pas de compte ?",
@@ -13,31 +21,43 @@
             "footer": "Vous avez déjà un compte ?",
             "action": "Se connecter",
             "error": {
+                "passwordMismatch": "Les mots de passe ne correspondent pas",
                 "usernameExists": "Ce nom d'utilisateur est déjà pris",
-                "passwordMismatch": "Les mots de passe ne correspondent pas"
+                "emailExists": "Cette adresse e-mail est déjà utilisée"
             }
         },
+        "email": "E-mail",
         "username": "Nom d'utilisateur",
         "password": "Mot de passe",
-        "confirmPassword": "Confirmer le mot de passe"
+        "confirmPassword": "Confirmer le mot de passe",
+        "authorize": {
+            "title": "Autoriser l'accès",
+            "description": "L'application <span class=\"font-semibold text-gray-900\">{client}</span> demande l'accès à votre compte FynnCloud. Assurez-vous de faire confiance à cette application avant de continuer.",
+            "account": "Compte",
+            "permissions": "Autorisations",
+            "scope": "Portée",
+            "fullAccess": "Accès complet",
+            "action": "Autoriser",
+            "continue": "Continuer",
+            "alreadyAuthorized": "Vous avez déjà autorisé <span class=\"font-semibold text-gray-900\">{client}</span>. Vous pouvez continuer sans nouvelle approbation.",
+            "success": "Autorisation réussie ! Redirection vers l'application...<br>Vous pouvez fermer cette fenêtre.",
+            "error": {
+                "missingParams": "Paramètres d'autorisation requis manquants.",
+                "invalidClientId": "ID client invalide.",
+                "invalidResponseType": "Type de réponse invalide.",
+                "invalidCodeChallengeMethod": "Méthode de défi de code invalide."
+            }
+        }
     },
     "welcome": "Bienvenue",
     "error": {
-        "title": "Erreur",
-        "message": "Une erreur est survenue",
         "serverUnreachable": "Serveur inaccessible",
-        "generic": "Une erreur est survenue",
-        "unknown": "Une erreur inconnue est survenue",
-        "auth": {
-            "register": {
-                "usernameTaken": "Ce nom d'utilisateur est déjà pris",
-                "emailTaken": "Cette adresse e-mail est déjà prise",
-                "passwordsDoNotMatch": "Les mots de passe ne correspondent pas"
-            },
-            "login": {
-                "invalidCredentials": "Nom d'utilisateur ou mot de passe invalide"
-            }
-        }
+        "networkError": "Connexion réseau perdue.",
+        "unknown": "Une erreur inconnue est survenue.",
+        "unauthorized": "Session expirée. Veuillez vous reconnecter.",
+        "forbidden": "Vous n'avez pas la permission d'accéder à cette ressource.",
+        "notFound": "La ressource demandée est introuvable.",
+        "generic": "Une erreur est survenue"
     },
     "navigation": {
         "allFiles": "Tous les fichiers",
@@ -57,11 +77,16 @@
         "type": {
             "folder": "Dossier"
         },
+        "drag": {
+            "multiple": "Plusieurs fichiers"
+        },
         "columns": {
+            "title": "Colonnes",
             "name": "Nom",
             "size": "Taille",
             "lastChanged": "Dernière modification",
-            "created": "Créé le"
+            "created": "Créé",
+            "deletedAt": "Supprimé le"
         },
         "selected": "{count} sélectionné(s)",
         "actions": {
@@ -97,7 +122,12 @@
             "share": "Partager",
             "favorite": "Ajouter aux favoris",
             "unfavorite": "Retirer des favoris",
-            "move": "Déplacer",
+            "move": {
+                "fileTitle": "Déplacer le fichier | Déplacer les fichiers",
+                "folderTitle": "Déplacer le dossier | Déplacer les dossiers",
+                "description": "Déplacer les fichiers vers un autre dossier.",
+                "button": "Déplacer"
+            },
             "copy": "Copier",
             "paste": "Coller",
             "cut": "Couper",
@@ -109,7 +139,13 @@
             "createFolderFailed": "Échec de la création du dossier",
             "renameFailed": "Échec du renommage",
             "restoreFailed": "Échec de la restauration de(s) l'élément(s)",
-            "moveFailed": "Échec du déplacement du fichier"
+            "moveFailed": "Échec du déplacement du fichier",
+            "moveSuccess": "Éléments déplacés avec succès"
+        },
+        "move": {
+             "title": "Déplacer les éléments",
+             "button": "Déplacer ici",
+             "selectDestination": "Sélectionnez le dossier de destination"
         }
     },
     "common": {
@@ -129,5 +165,49 @@
     },
     "audioPlayer": {
         "preview": "Aperçu audio"
+    },
+    "upload": {
+        "error": {
+            "quotaExceeded": "Quota dépassé. Espace de stockage insuffisant.",
+            "nameConflict": "Un fichier portant ce nom existe déjà.",
+            "unauthorized": "Session expirée. Veuillez vous reconnecter.",
+            "networkError": "Connexion réseau perdue.",
+            "unknown": "Une erreur inconnue est survenue."
+        },
+        "state": {
+            "pending": "En attente...",
+            "uploading": "{progress}%",
+            "processing": "Traitement...",
+            "completed": "Terminé"
+        }
+    },
+    "admin": {
+        "title": "Administration",
+        "overview": "Vue d'ensemble",
+        "users": "Utilisateurs",
+        "settings": "Paramètres",
+        "backToFiles": "Retour aux fichiers",
+        "systemInfo": "Informations système",
+        "appName": "Nom de l'application",
+        "version": "Version",
+        "environment": "Environnement",
+        "comingSoon": "Bientôt disponible",
+        "alerts": {
+            "title": "État du système",
+            "critical": "Critique",
+            "warning": "Avertissement",
+            "info": "Info",
+            "noIssues": "Aucun problème détecté",
+            "someIssues": "Certains problèmes détectés",
+            "criticalIssues": "Problèmes critiques détectés",
+            "jwtSecretDefault": "Le secret JWT utilise une valeur aléatoire par défaut — les jetons seront invalidés à chaque redémarrage. Définissez la variable JWT_SECRET.",
+            "sqliteInProduction": "SQLite est utilisé en production. Envisagez de passer à PostgreSQL.",
+            "localStorageInProduction": "Le stockage local est utilisé en production. Envisagez de passer à S3.",
+            "corsAllowAll": "CORS autorise toutes les origines en production. Restreignez les origines autorisées.",
+            "ldapDefaultPassword": "LDAP utilise le mot de passe de liaison par défaut. Changez LDAP_PASSWORD.",
+            "ldapDisabled": "L'authentification LDAP n'est pas activée.",
+            "appNameDefault": "Le nom utilise la valeur par défaut 'FynnCloud'. Définissez APP_NAME pour personnaliser.",
+            "httpNotHttps": "HTTP n'est pas recommandé pour la production. Utilisez HTTPS."
+        }
     }
 }
