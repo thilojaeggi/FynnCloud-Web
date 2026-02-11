@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { ref, watch, computed, onUnmounted, nextTick } from 'vue'
-import { useAudioPlayer } from '~/composables/useAudioPlayer'
 import { parseBlob } from 'music-metadata'
-
-const { currentTrack, trackSrc, isPlaying, isVisible, pause, resume, close, playerHeight, next, previous, hasNext, hasPrevious } = useAudioPlayer()
+import { useApi } from '~/composables/useApi'
+const { currentTrack, trackSrc, isPlaying, isVisible, pause, resume, close, playerHeight, next, previous, hasNext, hasPrevious, handleError } = useAudioPlayer()
 const audioRef = ref<HTMLAudioElement | null>(null)
 const progressBarRef = ref<HTMLElement | null>(null)
 const containerRef = ref<HTMLElement | null>(null)
@@ -13,7 +11,17 @@ const duration = ref(0)
 const isDraggingProgress = ref(false)
 const seekTime = ref(0) // Separate tracking for seek time when dragging
 
-// Metadata state
+
+const seekInterval = ref<ReturnType<typeof setInterval> | null>(null)
+const seekTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
+const isHoldSeeking = ref(false)
+const SEEK_HOLD_DELAY = 300 // ms before hold-seek activates
+const SEEK_STEP = 0.15 // seconds per interval tick
+const SEEK_INTERVAL = 16 // ~60fps
+const SEEK_ACCELERATION = 1.06 // multiplier applied each tick
+let currentSeekStep = SEEK_STEP
+
+
 const title = ref<string | null>(null)
 const artist = ref<string | null>(null)
 const album = ref<string | null>(null)
@@ -38,10 +46,10 @@ watch(isPlaying, (newVal) => {
 })
 
 const loadTrack = async () => {
-    // Reset state
+
     error.value = null
 
-    // Cleanup previous URLs
+
     if (coverUrl.value) {
         URL.revokeObjectURL(coverUrl.value)
         coverUrl.value = null
@@ -51,7 +59,7 @@ const loadTrack = async () => {
         audioUrl.value = null
     }
 
-    // Reset metadata
+
     title.value = null
     artist.value = null
     album.value = null
@@ -60,13 +68,18 @@ const loadTrack = async () => {
     if (!currentTrack.value || !trackSrc.value) return
 
     try {
-        const response = await fetch(trackSrc.value)
+        const response = await useApi<Blob>(
+            trackSrc.value,
+            {
+                responseType: 'blob'
+            }
+        )
 
-        if (!response.ok) {
-            throw new Error(`Failed to load audio: ${response.status} ${response.statusText}`)
+        if (!response) {
+            throw new Error(`Failed to load audio`)
         }
 
-        const blob = await response.blob()
+        const blob = response
 
         audioUrl.value = URL.createObjectURL(blob)
 
@@ -77,12 +90,12 @@ const loadTrack = async () => {
             if (isPlaying.value) audioRef.value.play().catch(e => console.error("Play error:", e))
         }
 
-        // Parse metadata asynchronously
+
         parseMetadata(blob)
 
     } catch (e: any) {
         console.error("Failed to load track", e)
-        error.value = e.message || "Unknown error"
+        error.value = e.data?.localizationKey ? $t(e.data.localizationKey) : $t('error.unknown')
     }
 }
 
@@ -109,17 +122,17 @@ const parseMetadata = async (blob: Blob) => {
 }
 
 watch(trackSrc, async () => {
-    // Reset state
+
     currentTime.value = 0
     seekTime.value = 0
     duration.value = 0
 
-    // Load track (which handles playback start)
+
     await loadTrack()
 })
 
 const onTimeUpdate = () => {
-    if (audioRef.value) {
+    if (audioRef.value && !isHoldSeeking.value) {
         currentTime.value = audioRef.value.currentTime
     }
 }
@@ -152,6 +165,8 @@ const formatTime = (time: number) => {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
 }
 
+
+
 const handleSeekStart = (e: MouseEvent) => {
     isDraggingProgress.value = true
     seekTime.value = currentTime.value
@@ -179,6 +194,44 @@ const handleSeekEnd = () => {
     document.removeEventListener('mouseup', handleSeekEnd)
     document.body.style.cursor = 'auto'
 }
+
+
+
+const startHoldSeek = (direction: 'forward' | 'backward') => {
+    currentSeekStep = SEEK_STEP
+    // Start a timeout; if the user holds long enough, begin continuous seeking
+    seekTimeout.value = setTimeout(() => {
+        isHoldSeeking.value = true
+        seekInterval.value = setInterval(() => {
+            if (!audioRef.value || !duration.value) return
+            currentSeekStep *= SEEK_ACCELERATION
+            const delta = direction === 'forward' ? currentSeekStep : -currentSeekStep
+            const newTime = Math.max(0, Math.min(duration.value, audioRef.value.currentTime + delta))
+            audioRef.value.currentTime = newTime
+            currentTime.value = newTime
+        }, SEEK_INTERVAL)
+    }, SEEK_HOLD_DELAY)
+}
+
+const stopHoldSeek = (direction: 'forward' | 'backward') => {
+    if (seekTimeout.value) {
+        clearTimeout(seekTimeout.value)
+        seekTimeout.value = null
+    }
+    if (seekInterval.value) {
+        clearInterval(seekInterval.value)
+        seekInterval.value = null
+    }
+
+    if (!isHoldSeeking.value) {
+        if (direction === 'forward') next()
+        else previous()
+    }
+    isHoldSeeking.value = false
+    currentSeekStep = SEEK_STEP
+}
+
+
 
 const updateHeight = () => {
     if (containerRef.value) {
@@ -209,6 +262,8 @@ watch(() => isVisible.value, (visible) => {
 onUnmounted(() => {
     document.removeEventListener('mousemove', handleSeekMove)
     document.removeEventListener('mouseup', handleSeekEnd)
+    if (seekInterval.value) clearInterval(seekInterval.value)
+    if (seekTimeout.value) clearTimeout(seekTimeout.value)
     if (coverUrl.value) URL.revokeObjectURL(coverUrl.value)
     if (audioUrl.value) URL.revokeObjectURL(audioUrl.value)
     if (resizeObserver) resizeObserver.disconnect()
@@ -239,7 +294,7 @@ onUnmounted(() => {
                             <span class="text-sm text-red-700 truncate">{{ error }}</span>
                         </div>
                         <button @click="close"
-                            class="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer">
+                            class="p-2 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
                                 class="size-5">
                                 <path
@@ -255,7 +310,7 @@ onUnmounted(() => {
                         <div
                             class="flex flex-row items-start gap-2 overflow-hidden bg-gray-100/80 dark:bg-neutral-800/80 p-1 rounded-xl border border-gray-200 dark:border-neutral-700 transition-colors">
                             <div
-                                class="w-12 h-12 rounded-lg bg-linear-to-br from-primary-500 to-indigo-600 flex items-center justify-center shrink-0 overflow-hidden relative">
+                                class="w-12 h-12 rounded-lg bg-linear-to-br from-primary-500 to-primary-700 flex items-center justify-center shrink-0 overflow-hidden relative">
                                 <img v-if="coverUrl" :src="coverUrl" class="w-full h-full object-cover"
                                     alt="Album Art" />
                                 <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
@@ -274,51 +329,56 @@ onUnmounted(() => {
                         </div>
 
 
-                        <!-- Progress Bar -->
+
                         <div class="flex items-center gap-3 text-xs font-medium text-gray-400 flex-1 select-none px-4">
                             <span>{{ formatTime(currentDisplayTime) }}</span>
-                            <div ref="progressBarRef"
-                                class="relative items-center flex-1 h-2 bg-gray-200 rounded-full cursor-pointer group"
+                            <div ref="progressBarRef" class="relative flex items-center flex-1 h-5 cursor-pointer group"
                                 @mousedown="handleSeekStart">
-                                <!-- Min max to not have a square at the start of the progress bar -->
-                                <div class="absolute h-full bg-primary-500 rounded-full pointer-events-none transition-all duration-100"
-                                    :style="{ width: `${Math.min(Math.max(1, progressPercent), 100)}%` }">
-                                    <div
-                                        class="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-primary-500 text-white rounded-full shadow opacity-0 group-hover:opacity-100 transition-opacity border border-gray-200">
+
+                                <div class="absolute inset-x-0 h-2 bg-gray-200 rounded-full">
+                                    <div class="absolute h-full bg-primary-500 rounded-full pointer-events-none transition-[width] duration-75 ease-linear"
+                                        :style="{ width: `${Math.min(Math.max(1, progressPercent), 100)}%` }">
                                     </div>
+                                </div>
+
+                                <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-primary-500 text-white rounded-full shadow border border-gray-200 pointer-events-none transition-opacity duration-150"
+                                    :class="isDraggingProgress ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'"
+                                    :style="{ left: `${Math.min(Math.max(1, progressPercent), 99)}%` }">
                                 </div>
                             </div>
                             <span>{{ formatTime(duration) }}</span>
                         </div>
 
 
-                        <!-- Controls -->
                         <div class="flex justify-center items-center gap-4 mr-4">
-                            <!-- Backward (Previous specific styling) -->
-                            <button @click="previous" :disabled="!hasPrevious"
-                                :class="{ 'opacity-50 cursor-not-allowed': !hasPrevious, 'active:scale-[0.98] cursor-pointer': hasPrevious }"
-                                class="group relative inline-flex items-center justify-center w-10 h-10 rounded-full transition-all duration-150 ease-out border-2 border-gray-200 dark:border-gray-600">
-                                <div
-                                    class="absolute inset-0 bg-linear-to-b from-white to-gray-200 dark:from-gray-700 dark:to-gray-800 shadow-[inset_0_2px_3px_rgba(255,255,255,0.9),0_6px_10px_rgba(0,0,0,0.15)] dark:shadow-none rounded-full transition-all duration-150 ease-out group-active:shadow-[inset_0_6px_12px_-2px_rgba(0,0,0,0.4)]">
+
+                            <button @mousedown.prevent="hasPrevious || duration ? startHoldSeek('backward') : undefined"
+                                @mouseup="hasPrevious || duration ? stopHoldSeek('backward') : undefined"
+                                @mouseleave="(seekInterval || seekTimeout) ? stopHoldSeek('backward') : undefined"
+                                :disabled="!hasPrevious && !duration"
+                                :class="{ 'opacity-50 cursor-not-allowed': !hasPrevious && !duration, 'active:scale-[0.98] cursor-pointer': hasPrevious || duration }"
+                                class="group relative inline-flex items-center justify-center w-10 h-10 rounded-full transition-all duration-150 ease-out border-2 border-gray-200 dark:border-gray-800 select-none">
+                                <div class="absolute inset-0 bg-linear-to-b from-white to-gray-200 dark:from-gray-700 dark:to-gray-800 shadow-[inset_0_2px_3px_rgba(255,255,255,0.9),0_6px_10px_rgba(0,0,0,0.15)] dark:shadow-none rounded-full transition-all duration-150 ease-out"
+                                    :class="{
+                                        'shadow-[inset_0_6px_12px_-2px_rgba(0,0,0,0.4)]!': isHoldSeeking,
+                                        'group-active:shadow-[inset_0_6px_12px_-2px_rgba(0,0,0,0.4)]': hasPrevious || duration,
+                                        'active:scale-none! shadow-none! scale-none!': !hasPrevious && !duration
+                                    }">
                                 </div>
-                                <div class="relative z-10 text-gray-900 dark:text-white">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="2" stroke="currentColor" class="size-5 pr-0.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M21 16.811c0 .864-.933 1.406-1.683.977l-7.108-4.061a1.125 1.125 0 0 1 0-1.954l7.108-4.061A1.125 1.125 0 0 1 21 8.689v8.122ZM11.25 16.811c0 .864-.933 1.406-1.683.977l-7.108-4.061a1.125 1.125 0 0 1 0-1.954l7.108-4.061a1.125 1.125 0 0 1 1.683.977v8.122Z" />
-                                    </svg>
+                                <div
+                                    class="relative z-10 text-gray-600 dark:text-gray-300 flex items-center justify-center">
+                                    <Icon name="heroicons:backward-solid" class="size-5" />
                                 </div>
                             </button>
 
-                            <!-- Play/Pause -->
+
                             <button @click="togglePlay"
-                                class="group relative inline-flex items-center justify-center w-14 h-14 rounded-full cursor-pointer transition-all duration-150 ease-out active:scale-[0.98] shadow-lg shadow-gray-900/3 border-2 border-gray-200 dark:border-gray-600">
-                                <!-- Dark 3D Background -->
+                                class="group relative inline-flex items-center justify-center w-14 h-14 rounded-full cursor-pointer transition-all duration-150 ease-out active:scale-[0.98] shadow-lg shadow-gray-900/3 border-2 border-gray-200 dark:border-none">
                                 <div
-                                    class="absolute inset-0 bg-linear-to-b from-gray-700 to-gray-900 dark:from-primary-600 dark:to-primary-800 shadow-[inset_0_2px_2px_rgba(255,255,255,0.3),0_4px_6px_rgba(0,0,0,0.3)] dark:shadow-none rounded-full transition-all duration-150 ease-out group-active:shadow-[inset_0_8px_16px_-2px_rgba(0,0,0,0.4)]">
+                                    class="absolute inset-0 bg-linear-to-b from-primary-600 to-primary-800 shadow-[inset_0_2px_2px_rgba(255,255,255,0.3),0_4px_6px_rgba(0,0,0,0.3)] dark:shadow-none rounded-full transition-all duration-150 ease-out group-active:shadow-[inset_0_8px_16px_-2px_rgba(0,0,0,0.4)]">
                                 </div>
 
-                                <!-- Icon -->
+
                                 <div class="relative z-10 text-white">
                                     <svg v-if="isPlaying" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                                         fill="currentColor" class="size-7">
@@ -335,27 +395,31 @@ onUnmounted(() => {
                                 </div>
                             </button>
 
-                            <!-- Forward (Next specific styling) -->
-                            <button @click="next" :disabled="!hasNext"
-                                :class="{ 'opacity-50 cursor-not-allowed': !hasNext, 'active:scale-[0.98] cursor-pointer': hasNext }"
-                                class="group relative inline-flex items-center justify-center w-10 h-10 rounded-full transition-all duration-150 ease-out border-2 border-gray-200 dark:border-gray-600">
-                                <div
-                                    class="absolute inset-0 bg-linear-to-b from-white to-gray-200 dark:from-gray-700 dark:to-gray-800 shadow-[inset_0_2px_3px_rgba(255,255,255,0.9),0_6px_10px_rgba(0,0,0,0.15)] dark:shadow-none rounded-full transition-all duration-150 ease-out group-active:shadow-[inset_0_6px_12px_-2px_rgba(0,0,0,0.4)]">
+
+                            <button @mousedown.prevent="hasNext || duration ? startHoldSeek('forward') : undefined"
+                                @mouseup="hasNext || duration ? stopHoldSeek('forward') : undefined"
+                                @mouseleave="(seekInterval || seekTimeout) ? stopHoldSeek('forward') : undefined"
+                                :disabled="!hasNext && !duration"
+                                :class="{ 'opacity-50 cursor-not-allowed scale-none! shadow-none!': !hasNext && !duration, 'active:scale-[0.98] cursor-pointer': hasNext || duration }"
+                                class="group relative inline-flex items-center justify-center w-10 h-10 rounded-full transition-all duration-150 ease-out border-2 border-gray-200 dark:border-gray-800 select-none">
+                                <div class="absolute inset-0 bg-linear-to-b from-white to-gray-200 dark:from-gray-700 dark:to-gray-800 shadow-[inset_0_2px_3px_rgba(255,255,255,0.9),0_6px_10px_rgba(0,0,0,0.15)] dark:shadow-none rounded-full transition-all duration-150 ease-out"
+                                    :class="{
+                                        'shadow-[inset_0_6px_12px_-2px_rgba(0,0,0,0.4)]!': isHoldSeeking,
+                                        'group-active:shadow-[inset_0_6px_12px_-2px_rgba(0,0,0,0.4)]': hasNext || duration,
+                                        'active:scale-none! shadow-none!': !hasNext && !duration
+                                    }">
                                 </div>
 
-                                <div class="relative z-10 text-gray-900 dark:text-white">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="2" stroke="currentColor" class="size-5 pl-0.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M3 8.689c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 0 1 0 1.954l-7.108 4.061A1.125 1.125 0 0 1 3 16.811V8.69ZM12.75 8.689c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 0 1 0 1.954l-7.108 4.061a1.125 1.125 0 0 1-1.683-.977V8.69Z" />
-                                    </svg>
+                                <div
+                                    class="relative z-10 text-gray-600 dark:text-gray-300 flex items-center justify-center">
+                                    <Icon name="heroicons:forward-solid" class="size-5" />
                                 </div>
                             </button>
                         </div>
 
 
                         <button @click="close"
-                            class="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100 cursor-pointer mr-2">
+                            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 cursor-pointer mr-2">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
                                 class="size-5">
                                 <path
@@ -366,9 +430,8 @@ onUnmounted(() => {
                     </div>
                 </template>
                 <audio ref="audioRef" :src="audioUrl || undefined" @timeupdate="onTimeUpdate"
-                    @loadedmetadata="onLoadedMetadata" @ended="onEnded" class="hidden"></audio>
+                    @loadedmetadata="onLoadedMetadata" @ended="onEnded" @error="handleError" class="hidden"></audio>
             </div>
         </div>
     </Transition>
 </template>
-```
