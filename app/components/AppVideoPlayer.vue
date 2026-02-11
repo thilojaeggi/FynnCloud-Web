@@ -6,7 +6,7 @@ const { isVisible: isPreviewVisible, previewUrl, close, currentFile } = usePrevi
 
 const isVisible = computed(() => isPreviewVisible.value && currentFile.value?.type === 'video')
 
-// Close on escape key
+
 onMounted(() => {
     window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && isVisible.value) {
@@ -14,18 +14,43 @@ onMounted(() => {
         }
     })
 })
+
+const handleVideoError = async (e: Event) => {
+    const video = e.target as HTMLVideoElement
+    if (video.error) {
+        // Try to refresh token
+        const { handle401 } = useTokenRefresh()
+        const refreshed = await handle401()
+
+        if (refreshed && previewUrl.value) {
+            // Force reload by updating src (adding timestamp to bust cache if needed, 
+            // though for 401s usually just retrying the same URL works if cookies are updated)
+            // But we need to trigger a network request.
+            const currentTime = video.currentTime
+            const originalSrc = previewUrl.value
+
+            // Force reload by updating src (adding timestamp to bust cache)
+            const separator = originalSrc.includes('?') ? '&' : '?'
+            video.src = `${originalSrc}${separator}t=${Date.now()}`
+            video.currentTime = currentTime
+            try {
+                await video.play()
+            } catch (e) { }
+        }
+    }
+}
 </script>
 
 <template>
     <Teleport to="body">
-        <!-- Backdrop -->
+
         <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0"
             enter-to-class="opacity-100" leave-active-class="transition duration-150 ease-in"
             leave-from-class="opacity-100" leave-to-class="opacity-0">
             <div v-if="isVisible" class="fixed inset-0 bg-gray-900/75 z-60 transition-opacity" @click="close" />
         </Transition>
 
-        <!-- Modal -->
+
         <Transition enter-active-class="transition duration-300 ease-out"
             enter-from-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             enter-to-class="opacity-100 translate-y-0 sm:scale-100" leave-active-class="transition duration-200 ease-in"
@@ -35,7 +60,7 @@ onMounted(() => {
                 class="fixed inset-0 z-60 overflow-y-auto pointer-events-none p-4 md:p-8 flex items-center justify-center">
                 <div
                     class="relative w-full max-w-6xl bg-white dark:bg-neutral-900 rounded-lg shadow-2xl flex flex-col overflow-hidden pointer-events-auto">
-                    <!-- Header -->
+
                     <div
                         class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800 shrink-0">
                         <div class="flex items-center gap-2 overflow-hidden">
@@ -55,10 +80,10 @@ onMounted(() => {
                         </div>
                     </div>
 
-                    <!-- Content -->
+
                     <div class="flex-1 relative bg-black flex items-center justify-center overflow-hidden aspect-video">
                         <video v-if="previewUrl" :src="previewUrl" controls autoplay
-                            class="w-full h-full max-h-[80vh] outline-none"></video>
+                            class="w-full h-full max-h-[80vh] outline-none" @error="handleVideoError"></video>
                     </div>
                 </div>
             </div>
