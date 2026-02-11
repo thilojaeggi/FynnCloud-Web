@@ -20,7 +20,7 @@ const isLoading = ref(false)
 const handleRegister = async () => {
   error.value = ''
   if (password.value !== confirmPassword.value) {
-    error.value = t('auth.register.error.passwordMismatch')
+    error.value = t('auth.error.passwordMismatch')
     return
   }
 

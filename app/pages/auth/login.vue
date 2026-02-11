@@ -33,7 +33,7 @@ const handleLogin = async () => {
     if (e.data?.localizationKey) {
       error.value = t(e.data.localizationKey)
     } else if (e.response && (e.response.status === 401 || e.response.status === 404 || e.response.status === 403)) {
-      error.value = t('auth.login.error.invalidCredentials')
+      error.value = t('auth.error.credentials')
     } else if (!e.response) {
       error.value = t('error.serverUnreachable')
     } else {
