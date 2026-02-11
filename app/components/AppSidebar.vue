@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { t } = useI18n()
+const { isAdmin } = useAuth()
 
 const links = computed(() => [
   { label: t('navigation.allFiles'), icon: 'heroicons:folder', to: '/' },
@@ -20,7 +21,8 @@ const { formattedUsage, percentage } = useQuota()
       <div class="grow">
       </div>
       <div class="px-2 space-y-1">
-        <AppSidebarItem :link="{ label: t('admin.title'), icon: 'heroicons:cog-6-tooth', to: '/admin' }" />
+        <AppSidebarItem v-if="isAdmin"
+          :link="{ label: t('admin.title'), icon: 'heroicons:cog-6-tooth', to: '/admin' }" />
         <AppSidebarItem
           :link="{ label: t('navigation.trash'), icon: 'heroicons:trash', to: '/trash', variant: 'danger' }" />
       </div>
