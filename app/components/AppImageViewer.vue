@@ -5,7 +5,7 @@ const { isVisible: isPreviewVisible, previewUrl, close, currentFile, isLoading, 
 
 const isVisible = computed(() => isPreviewVisible.value && currentFile.value?.type === 'image')
 
-// Zoom and Pan State
+
 const scale = ref(1)
 const translateX = ref(0)
 const translateY = ref(0)
@@ -97,7 +97,7 @@ function stopDrag() {
     isDragging.value = false
 }
 
-// Close on escape key
+
 onMounted(() => {
     window.addEventListener('keydown', handleKeydown)
     // Global mouseup to stop dragging if cursor leaves the element
@@ -127,14 +127,14 @@ function handleKeydown(e: KeyboardEvent) {
 <template>
 
     <Teleport to="body">
-        <!-- Backdrop -->
+
         <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0"
             enter-to-class="opacity-100" leave-active-class="transition duration-150 ease-in"
             leave-from-class="opacity-100" leave-to-class="opacity-0">
             <div v-if="isVisible" class="fixed inset-0 bg-gray-900/75 z-60 transition-opacity" @click="close" />
         </Transition>
 
-        <!-- Modal -->
+
         <Transition enter-active-class="transition duration-300 ease-out"
             enter-from-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             enter-to-class="opacity-100 translate-y-0 sm:scale-100" leave-active-class="transition duration-200 ease-in"
@@ -142,7 +142,7 @@ function handleKeydown(e: KeyboardEvent) {
             leave-to-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
             <div v-if="isVisible" class="fixed inset-0 z-60 overflow-hidden pointer-events-none p-4 md:p-8">
                 <div class="flex min-h-full items-center justify-center relative">
-                    <!-- Previous Button -->
+
                     <button v-if="hasPrevious" @click="previous" title="Previous Image"
                         class=" absolute left-4 md:left-10 flex items-center justify-center p-2 rounded-full bg-white dark:bg-neutral-800 hover:bg-white/80 dark:hover:bg-neutral-700 text-gray-900 dark:text-gray-100 shadow-xl backdrop-blur-sm transition-all pointer-events-auto z-70 focus:outline-none focus:ring-2 focus:ring-white/50 dark:focus:ring-neutral-600">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
@@ -153,14 +153,14 @@ function handleKeydown(e: KeyboardEvent) {
 
                     <div v-if="isVisible"
                         class="relative w-full h-[85vh] max-w-6xl bg-white dark:bg-neutral-900 rounded-lg shadow-2xl flex flex-col overflow-hidden pointer-events-auto">
-                        <!-- Header -->
+
                         <div
                             class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800 shrink-0">
                             <div class="flex items-center gap-2 overflow-hidden">
                                 <FileIcon file-type="image" class="size-6" />
 
                                 <h3 class="font-medium text-gray-900 dark:text-gray-100 truncate">{{ currentFile?.name
-                                }}</h3>
+                                    }}</h3>
                             </div>
                             <div class="flex items-center gap-2">
 
@@ -169,7 +169,7 @@ function handleKeydown(e: KeyboardEvent) {
                                     class="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-600 text-gray-600 dark:text-gray-300 font-medium transition-colors">
                                     Reset
                                 </button>
-                                <!-- Zoom Controls -->
+
                                 <button @click="zoomOut" title="Zoom Out"
                                     class="p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
@@ -214,7 +214,7 @@ function handleKeydown(e: KeyboardEvent) {
                             </div>
                         </div>
 
-                        <!-- Content -->
+
                         <div class="flex-1 relative bg-gray-100 dark:bg-neutral-950 flex items-center justify-center overflow-hidden select-none"
                             @wheel="handleWheel" @mousedown="startDrag" @mousemove="onDrag" @mouseup="stopDrag"
                             @mouseleave="stopDrag" @touchstart="startDrag" @touchmove="onDrag" @touchend="stopDrag">
