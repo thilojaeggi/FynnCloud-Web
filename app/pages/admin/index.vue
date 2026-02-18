@@ -2,7 +2,8 @@
 definePageMeta({ layout: 'admin' })
 
 const { t } = useI18n()
-const { appName, appVersion, environment } = useBackEndConfig()
+const { appName, environment } = useBackEndConfig()
+const { frontendVersion, backendVersion } = useAppVersions()
 
 useHead({
     title: t('admin.overview'),
@@ -59,7 +60,8 @@ const statusColor = computed(() =>
 
 const systemInfoRows = computed(() => [
     { label: t('admin.appName'), value: appName, mono: false },
-    { label: t('admin.version'), value: appVersion, mono: true },
+    { label: t('admin.uiVersion'), value: frontendVersion, mono: true },
+    { label: t('admin.serverVersion'), value: backendVersion, mono: true },
     { label: t('admin.environment'), value: environment, mono: false, capitalize: true },
 ])
 
@@ -87,17 +89,17 @@ onMounted(async () => {
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-start">
             <!-- Alerts — 8 of 12 columns -->
             <section
-                class="lg:col-span-8 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-neutral-700/50 dark:bg-neutral-800/60">
+                class="lg:col-span-8 overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-neutral-700/50 dark:bg-neutral-800/60">
                 <div class="p-3">
                     <div v-if="loadingAlerts"
-                        class="flex items-center gap-3 py-1 text-sm text-gray-400 dark:text-neutral-500">
-                        <svg class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 24 24">
+                        class="flex items-center gap-3 py-1 text-sm text-gray-900 dark:text-neutral-200">
+                        <svg class="h-5 w-5 animate-spin text-primary-500" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" />
                             <path class="opacity-75" fill="currentColor"
                                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                         </svg>
-                        <span class="font-medium italic">{{ t('common.loading') }}…</span>
+                        <span class="font-normal ">{{ t('common.loading') }}…</span>
                     </div>
 
                     <div v-else class="space-y-4">
@@ -166,7 +168,7 @@ onMounted(async () => {
 
             <!-- System Info — 4 of 12 columns -->
             <section
-                class="lg:col-span-4 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-neutral-700/50 dark:bg-neutral-800/60">
+                class="lg:col-span-4 overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-neutral-700/50 dark:bg-neutral-800/60">
                 <h2 class="px-3 pb-1 pt-2 text-lg font-light text-gray-900 dark:text-neutral-100">
                     {{ t('admin.systemInfo') }}
                 </h2>
