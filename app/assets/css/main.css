@@ -24,4 +24,21 @@
 button, a {
     cursor: pointer;
 }
-    
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+html.dark::view-transition-old(root) {
+  z-index: 100;
+}
+
+html.color-transition.dark::view-transition-old(root) {
+  z-index: 1;
+}
+
+html.color-transition::view-transition-new(root) {
+  z-index: 9999;
+}
