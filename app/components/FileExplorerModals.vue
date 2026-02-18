@@ -52,7 +52,7 @@ watch(() => props.showRename, async (newVal) => {
             :placeholder="t('files.actions.createFolder.placeholder')" :label="t('common.name')" :autofocus="true"
             @keyup.enter="emit('createFolder')" />
         <template #footer="{ close }">
-            <div class="flex gap-3">
+            <div class="flex gap-2">
                 <AppButton variant="secondary" rounded="rounded-md" @click="close">{{ t('common.cancel') }}</AppButton>
                 <AppButton variant="primary" rounded="rounded-md" @click="emit('createFolder')">{{
                     t('files.actions.createFolder.button') }}</AppButton>
@@ -78,7 +78,7 @@ watch(() => props.showRename, async (newVal) => {
             </div>
         </div>
         <template #footer="{ close }">
-            <div class="flex gap-3">
+            <div class="flex gap-2">
                 <AppButton variant="secondary" rounded="rounded-md" @click="close">{{ t('common.cancel') }}</AppButton>
                 <AppButton variant="primary" rounded="rounded-md" @click="emit('rename')">{{
                     t('files.actions.rename.button') }}
