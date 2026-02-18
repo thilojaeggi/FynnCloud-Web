@@ -3,6 +3,9 @@
 useHead({
   bodyAttrs: {
     class: 'min-h-dvh min-w-dvw bg-linear-to-br from-zinc-900 to-primary-700 dark:from-primary-950 dark:to-zinc-950 '
+  },
+  htmlAttrs: {
+    class: 'bg-zinc-900 dark:bg-zinc-950 transition-colors duration-300'
   }
 })
 </script>
