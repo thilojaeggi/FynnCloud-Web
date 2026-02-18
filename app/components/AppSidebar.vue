@@ -1,12 +1,12 @@
 <script setup lang="ts">
 const { t } = useI18n()
-const { isAdmin } = useAuth()
+const { user } = useAuth()
 
 const links = computed(() => [
-  { label: t('navigation.allFiles'), icon: 'heroicons:folder', to: '/' },
-  { label: t('navigation.recentFiles'), icon: 'heroicons:clock', to: '/recent' },
-  { label: t('navigation.favoriteFiles'), icon: 'heroicons:star', to: '/favorites' },
-  { label: t('navigation.sharedFiles'), icon: 'heroicons:share', to: '/shared' },
+  { label: t('navigation.allFiles'), icon: 'heroicons:folder-solid', to: '/' },
+  { label: t('navigation.recentFiles'), icon: 'heroicons:clock-solid', to: '/recent' },
+  { label: t('navigation.favoriteFiles'), icon: 'heroicons:star-solid', to: '/favorites' },
+  { label: t('navigation.sharedFiles'), icon: 'heroicons:share-solid', to: '/shared' },
 ])
 
 const { formattedUsage, percentage } = useQuota()
@@ -14,17 +14,25 @@ const { formattedUsage, percentage } = useQuota()
 
 <template>
   <div class="h-full">
-    <div class="h-full bg-primary-700 dark:bg-primary-800 shadow-lg pb-2 flex flex-col justify-between">
+    <div class="h-full pb-2 flex flex-col justify-between transition-colors duration-300
+                bg-linear-to-b from-primary-600 via-primary-700 to-primary-800
+                dark:from-primary-700 dark:via-primary-800 dark:to-primary-900
+                shadow-[inset_0_1px_0_rgba(255,255,255,0.12),4px_0_12px_rgba(0,0,0,0.08)]
+                dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),4px_0_12px_rgba(0,0,0,0.2)]">
+
       <nav class="space-y-1 p-2">
         <AppSidebarItem v-for="link in links" :key="link.to" :link="link" />
       </nav>
       <div class="grow">
       </div>
       <div class="px-2 space-y-1">
-        <AppSidebarItem v-if="isAdmin"
-          :link="{ label: t('admin.title'), icon: 'heroicons:cog-6-tooth', to: '/admin' }" />
+
+        <div class="h-px bg-white/10 mx-1 mb-1"></div>
+
+        <AppSidebarItem v-if="user?.isAdmin"
+          :link="{ label: t('admin.title'), icon: 'heroicons:cog-6-tooth-solid', to: '/admin' }" />
         <AppSidebarItem
-          :link="{ label: t('navigation.trash'), icon: 'heroicons:trash', to: '/trash', variant: 'danger' }" />
+          :link="{ label: t('navigation.trash'), icon: 'heroicons:trash-solid', to: '/trash', variant: 'danger' }" />
       </div>
       <div class="mt-4 mx-auto w-full px-4 mb-2 space-y-1">
         <div class="flex justify-between mx-1">
