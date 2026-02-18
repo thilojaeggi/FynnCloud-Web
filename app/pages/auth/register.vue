@@ -24,6 +24,7 @@ const handleRegister = async () => {
     return
   }
 
+
   isLoading.value = true
   try {
     await register({
@@ -49,14 +50,16 @@ const handleRegister = async () => {
 <template>
   <AuthCard :title="$t('auth.register.title')">
     <form @submit.prevent="handleRegister" class="space-y-3">
-      <AuthInput :label="$t('auth.username')" v-model="username" type="text" :placeholder="$t('auth.username')"
-        autofocus />
+      <AuthInput :required="true" :label="$t('auth.username')" v-model="username" type="text"
+        :placeholder="$t('auth.username')" autofocus />
 
-      <AuthInput :label="$t('auth.email')" v-model="email" type="email" :placeholder="$t('auth.email')" />
+      <AuthInput :required="false" :label="$t('auth.email')" v-model="email" type="email"
+        :placeholder="$t('auth.email')" />
 
-      <AuthInput :label="$t('auth.password')" v-model="password" type="password" :placeholder="$t('auth.password')" />
+      <AuthInput :required="true" :label="$t('auth.password')" v-model="password" type="password"
+        :placeholder="$t('auth.password')" />
 
-      <AuthInput :label="$t('auth.confirmPassword')" v-model="confirmPassword" type="password"
+      <AuthInput :required="true" :label="$t('auth.confirmPassword')" v-model="confirmPassword" type="password"
         :placeholder="$t('auth.confirmPassword')" />
 
       <AuthError :error="error" />
