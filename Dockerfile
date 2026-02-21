@@ -1,7 +1,6 @@
-# Build stage - compile the Nuxt app
-# Use -slim (Debian) instead of -alpine. QEMU arm64 emulation often hangs during npm ci
-# on Alpine (musl), especially when handling native packages like sharp (from nuxt/image).
-FROM node:25-slim AS builder
+# Build stage
+# Run the node builder natively on the host architecture to bypass QEMU arm64 emulation bugs
+FROM --platform=$BUILDPLATFORM node:25-slim AS builder
 
 WORKDIR /app
 
